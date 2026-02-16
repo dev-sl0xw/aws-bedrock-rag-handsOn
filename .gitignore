@@ -1,0 +1,31 @@
+# CDK
+cdk.out/
+*.js
+*.d.ts
+
+# Node
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Workshop archive (extracted to workshop/)
+workshop.zip
