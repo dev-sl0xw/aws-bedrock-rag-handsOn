@@ -1,0 +1,24 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/app.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": [
+      "README.md",
+      "cdk*.json",
+      "**/*.d.ts",
+      "**/*.js",
+      "tsconfig.json",
+      "package*.json",
+      ".git",
+      ".gitignore",
+      "node_modules",
+      "test",
+      "sampledata",
+      "frontend"
+    ]
+  },
+  "context": {
+    "@aws-cdk/aws-lambda:recognizeVersionProps": true,
+    "@aws-cdk/core:stackRelativeExports": true
+  }
+}
