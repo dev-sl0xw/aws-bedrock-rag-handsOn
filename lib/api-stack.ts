@@ -64,22 +64,42 @@ export class ApiStack extends cdk.Stack {
       },
     });
 
-    // [학습] Bedrock API 호출 IAM 권한
-    // - RetrieveAndGenerate: 관리형 RAG API (rag-query Lambda용)
-    // - Retrieve: 검색 전용 API (rag-converse Lambda용)
-    // - InvokeModel: LLM 직접 호출 (rag-converse Lambda의 converse 호출용)
-    const bedrockPolicy = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        'bedrock:RetrieveAndGenerate',
-        'bedrock:Retrieve',
-        'bedrock:InvokeModel',
-      ],
-      resources: ['*'],
-    });
+    // [학습] IAM 최소 권한 원칙: 각 Lambda에 필요한 권한만 부여합니다.
+    // 이전에는 두 Lambda가 동일한 Resource: '*' 정책을 공유했지만,
+    // 이는 불필요한 권한이 부여되어 보안 모범 사례에 어긋납니다.
 
-    ragQueryLambda.addToRolePolicy(bedrockPolicy);
-    ragConverseLambda.addToRolePolicy(bedrockPolicy);
+    // [학습] rag-query Lambda 권한: retrieve_and_generate()만 사용
+    // 이 API는 내부적으로 KB 검색과 LLM 호출을 모두 수행하므로,
+    // RetrieveAndGenerate + Retrieve + InvokeModel 권한이 필요합니다.
+    ragQueryLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:RetrieveAndGenerate'],
+      resources: ['*'],  // RetrieveAndGenerate는 리소스 수준 정책을 지원하지 않음
+    }));
+    ragQueryLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:Retrieve'],
+      resources: [`arn:aws:bedrock:${this.region}:${this.account}:knowledge-base/*`],
+    }));
+    ragQueryLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel'],
+      resources: [modelArn],
+    }));
+
+    // [학습] rag-converse Lambda 권한: retrieve() + converse() 분리 호출
+    // - Retrieve: Knowledge Base에서 관련 문서만 검색
+    // - InvokeModel: converse() API로 LLM을 직접 호출
+    ragConverseLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:Retrieve'],
+      resources: [`arn:aws:bedrock:${this.region}:${this.account}:knowledge-base/*`],
+    }));
+    ragConverseLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['bedrock:InvokeModel'],
+      resources: [modelArn],
+    }));
 
     // [학습] REST API Gateway 생성
     // API Gateway는 HTTP 요청을 Lambda 함수로 라우팅합니다.

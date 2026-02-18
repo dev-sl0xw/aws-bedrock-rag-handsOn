@@ -43,7 +43,9 @@ export class BedrockKbStack extends cdk.Stack {
     // Bedrock 서비스가 이 역할을 Assume하여 다른 AWS 서비스에 접근합니다.
     const kbRole = new iam.Role(this, 'KnowledgeBaseRole', {
       assumedBy: new iam.ServicePrincipal('bedrock.amazonaws.com'),
-      description: 'Bedrock Knowledge Base가 S3, S3 Vectors, Bedrock 모델에 접근하기 위한 역할',
+      // [학습] IAM Role의 description 속성은 ASCII/Latin-1 문자만 허용합니다.
+      // 한국어 등 유니코드 문자를 사용하면 배포 시 오류가 발생합니다.
+      description: 'Role for Bedrock Knowledge Base to access S3, S3 Vectors, and Bedrock models',
     });
 
     // [학습] S3 Vectors 접근 권한
