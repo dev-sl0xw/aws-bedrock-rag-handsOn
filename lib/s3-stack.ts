@@ -31,6 +31,10 @@ export class S3Stack extends cdk.Stack {
       bucketName: `${CONFIG.projectPrefix}-${CONFIG.documentBucketPrefix}-${cdk.Aws.ACCOUNT_ID}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
+      // [학습] 서버 사이드 암호화(SSE)를 활성화합니다.
+      // S3_MANAGED(AES-256)는 추가 비용 없이 저장 데이터를 암호화합니다.
+      // 보안 모범 사례에 따라 모든 S3 버킷에 암호화를 적용해야 합니다.
+      encryption: s3.BucketEncryption.S3_MANAGED,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
